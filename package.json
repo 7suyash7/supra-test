@@ -1,0 +1,27 @@
+{
+  "name": "supraoracles",
+  "version": "1.0.0",
+  "description": "**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/7suyash7/supra-test.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/7suyash7/supra-test/issues"
+  },
+  "homepage": "https://github.com/7suyash7/supra-test#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.1"
+  }
+}
