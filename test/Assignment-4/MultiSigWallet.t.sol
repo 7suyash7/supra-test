@@ -69,13 +69,13 @@ contract MultiSigWalletTest is Test {
         vm.prank(owners[0]);
         wallet.submitTransaction(to, value, data);
 
-        MultiSigWallet.MultiSigWalletTransaction memory tx = wallet.getTransaction(0);
-        assertEq(tx.to, to, "Recipient address does not match");
-        assertEq(tx.value, value, "Transaction value does not match");
-        assertEq(tx.data, data, "Transaction data does not match");
-        assertFalse(tx.executed, "Transaction should not be executed yet");
-        assertTrue(tx.isActive, "Transaction should be active");
-        assertEq(tx.approvalCount, 0, "Approval count should be 0");
+        MultiSigWallet.WalletMultiSigTx memory transaction = wallet.getTransaction(0);
+        assertEq(transaction.to, to, "Recipient address does not match");
+        assertEq(transaction.value, value, "Transaction value does not match");
+        assertEq(transaction.data, data, "Transaction data does not match");
+        assertFalse(transaction.executed, "Transaction should not be executed yet");
+        assertTrue(transaction.isActive, "Transaction should be active");
+        assertEq(transaction.approvalCount, 0, "Approval count should be 0");
     }
 
     // test to approve submitted transaction and check if approval count is correct
@@ -91,8 +91,8 @@ contract MultiSigWalletTest is Test {
         vm.prank(owners[1]);
         wallet.approveTransaction(0);
 
-        MultiSigWallet.MultiSigWalletTransaction memory tx = wallet.getTransaction(0);
-        assertEq(tx.approvalCount, 2, "Approval count should increase by 1");
+        MultiSigWallet.WalletMultiSigTx memory transaction = wallet.getTransaction(0);
+        assertEq(transaction.approvalCount, 2, "Approval count should increase by 1");
     }
 
     // test to approve non existing transaction to ensure it fails
@@ -169,7 +169,7 @@ contract MultiSigWalletTest is Test {
 
     // test to ensure non existing transaction fails
     function testExecuteNonExistingTransaction() public {
-        uint nonExistingTxIndex = 999; // Assuming this transaction index does not exist
+        uint nonExistingTxIndex = 999;
         vm.prank(owners[0]);
         vm.expectRevert("Transaction does not exist");
         wallet.executeTransaction(nonExistingTxIndex);
@@ -181,13 +181,11 @@ contract MultiSigWalletTest is Test {
         uint value = 1000;
         bytes memory data = "";
 
-        // Fund the wallet contract
         payable(address(wallet)).transfer(value);
 
         vm.prank(owners[0]);
         wallet.submitTransaction(to, value, data);
 
-        // Approve the transaction only once
         vm.prank(owners[0]);
         wallet.approveTransaction(0);
 
@@ -202,13 +200,11 @@ contract MultiSigWalletTest is Test {
         uint value = 1000;
         bytes memory data = "";
 
-        // Fund the wallet contract
         payable(address(wallet)).transfer(value);
 
         vm.prank(owners[0]);
         wallet.submitTransaction(to, value, data);
 
-        // Approve and execute the transaction
         vm.prank(owners[0]);
         wallet.approveTransaction(0);
         vm.prank(owners[1]);
@@ -216,7 +212,6 @@ contract MultiSigWalletTest is Test {
         vm.prank(owners[0]);
         wallet.executeTransaction(0);
 
-        // Attempt to execute the same transaction again
         vm.prank(owners[0]);
         vm.expectRevert("Transaction already executed");
         wallet.executeTransaction(0);
@@ -231,17 +226,16 @@ contract MultiSigWalletTest is Test {
         vm.prank(owners[0]);
         wallet.submitTransaction(to, value, data);
 
-        // Cancel the transaction
         vm.prank(owners[0]);
         wallet.cancelTransaction(0);
 
-        MultiSigWallet.MultiSigWalletTransaction memory tx = wallet.getTransaction(0);
-        assertFalse(tx.isActive, "Transaction should be marked as inactive");
+        MultiSigWallet.WalletMultiSigTx memory transaction = wallet.getTransaction(0);
+        assertFalse(transaction.isActive, "Transaction should be marked as inactive");
     }
 
     // test to cancel a non existing transaction and ensure it fails
     function testCancelNonExistingTransaction() public {
-        uint nonExistingTxIndex = 999; // Assuming this transaction index does not exist
+        uint nonExistingTxIndex = 999;
         vm.prank(owners[0]);
         vm.expectRevert("Transaction does not exist");
         wallet.cancelTransaction(nonExistingTxIndex);
@@ -253,12 +247,10 @@ contract MultiSigWalletTest is Test {
         uint value = 1000;
         bytes memory data = "";
 
-        // Fund the wallet contract and submit a transaction
         payable(address(wallet)).transfer(value);
         vm.prank(owners[0]);
         wallet.submitTransaction(to, value, data);
 
-        // Approve and execute the transaction
         vm.prank(owners[0]);
         wallet.approveTransaction(0);
         vm.prank(owners[1]);
@@ -266,7 +258,6 @@ contract MultiSigWalletTest is Test {
         vm.prank(owners[0]);
         wallet.executeTransaction(0);
 
-        // Attempt to cancel the executed transaction
         vm.prank(owners[0]);
         vm.expectRevert("Transaction already executed");
         wallet.cancelTransaction(0);
@@ -281,11 +272,9 @@ contract MultiSigWalletTest is Test {
         vm.prank(owners[0]);
         wallet.submitTransaction(to, value, data);
 
-        // Cancel the transaction
         vm.prank(owners[0]);
         wallet.cancelTransaction(0);
 
-        // Attempt to cancel the same transaction again
         vm.prank(owners[0]);
         vm.expectRevert("Transaction already cancelled");
         wallet.cancelTransaction(0);
@@ -303,7 +292,7 @@ contract MultiSigWalletTest is Test {
 
     // test to set an invalid number of required approvals and ensure it fails
     function testSetInvalidRequiredApprovals() public {
-        uint invalidRequiredApprovals = owners.length + 1; // More than the number of owners
+        uint invalidRequiredApprovals = owners.length + 1;
 
         vm.prank(owners[0]);
         vm.expectRevert("Invalid number of required approvals");
@@ -330,7 +319,7 @@ contract MultiSigWalletTest is Test {
         uint depositAmount = 500;
         payable(address(wallet)).transfer(depositAmount);
 
-        uint withdrawAmount = depositAmount + 500; // Exceeding amount
+        uint withdrawAmount = depositAmount + 500;
         address payable recipient = payable(address(0x5));
 
         vm.prank(owners[0]);
@@ -386,14 +375,3 @@ contract MultiSigWalletTest is Test {
     }
     
 }
-
-// Event Tests:
-
-// Check if the contract emits the expected events for different actions (submission, approval, execution, cancellation).
-
-// Gas Optimization Tests:
-
-// Measure the gas consumption of various contract functions to ensure gas efficiency.
-// Ownership Consensus Tests:
-
-// Test if the owners can collectively modify the required approvals through consensus.
